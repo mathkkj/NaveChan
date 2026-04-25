@@ -7,6 +7,21 @@ const supabase = createClient(
   "sb_publishable_2dPZBezbL79SlLaDJIkKtA_HNI6AIIW"
 );
 
+supabase
+  .channel("posts")
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "posts"
+    },
+    () => {
+      carregarPosts();
+    }
+  )
+  .subscribe();
+
 async function carregarPosts() {
   const { data } = await supabase //lembrar de colocar o await supabase toda hora antes de carregar algo
     .from("posts")
@@ -50,27 +65,14 @@ async function enviarPost() {
 document.getElementById("btnPostar").addEventListener("click", enviarPost);
 window.addEventListener("DOMContentLoaded", carregarPosts);
 
-supabase
-  .channel("posts")
-  .on(
-    "postgres_changes",
-    {
-      event: "INSERT",
-      schema: "public",
-      table: "posts"
-    },
-    () => {
-      carregarPosts();
-    }
-  )
-  .subscribe();
 
-//let count = 0
-//setInterval(function() {
-//    count = count + 1
-//
-//    if(count === 10){
-//        window.location.reload()
-//    }
-//        
-//}, 1000)
+
+let count = 0
+setInterval(function() {
+    count = count + 1
+
+    if(count === 600){
+        window.location.reload()
+    }
+        
+}, 1000)
