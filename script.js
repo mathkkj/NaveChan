@@ -11,7 +11,8 @@ async function carregarPosts() {
   const { data } = await supabase //lembrar de colocar o await supabase toda hora antes de carregar algo
     .from("posts")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }); 
+    (payload) => {window.location.reload()}
 
   const div = document.getElementById("posts");
   div.innerHTML = "";
@@ -35,13 +36,41 @@ async function enviarPost() {
   const input = document.getElementById("input");
   const texto = input.value.trim();
 
+
+
+
   if (!texto) return; //pra nao bugar caso n tenha texto
 
   await supabase.from("posts").insert([{ conteudo: texto }]); //esperar o supabase carregar
 
   input.value = "";
-  carregarPosts(); 
+  carregarPosts();
 }
 
 document.getElementById("btnPostar").addEventListener("click", enviarPost);
 window.addEventListener("DOMContentLoaded", carregarPosts);
+
+supabase
+  .channel("posts")
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "posts"
+    },
+    () => {
+      carregarPosts();
+    }
+  )
+  .subscribe();
+
+//let count = 0
+//setInterval(function() {
+//    count = count + 1
+//
+//    if(count === 10){
+//        window.location.reload()
+//    }
+//        
+//}, 1000)
