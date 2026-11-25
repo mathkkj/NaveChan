@@ -181,6 +181,8 @@ async function carregarPosts() {
 }
 
 // envia uma postagem ou resposta
+
+
 async function enviarPost() {
 
     const texto = input.value.trim();
@@ -189,14 +191,16 @@ async function enviarPost() {
 
     btnPostar.disabled = true;
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("posts")
         .insert([
             {
                 conteudo: texto,
                 id_referenciado: postSelecionadoParaResponder
             }
-        ]);
+        ])
+        .select()
+        .single();
 
     if (error) {
 
@@ -213,11 +217,14 @@ async function enviarPost() {
 
     cancelarResposta();
 
+    // atualiza imediatamente a conversa
     await carregarPosts();
 
     btnPostar.disabled = false;
 
 }
+
+
 
 // Realtime: detecta novas postagens e respostas
 supabase
