@@ -1,18 +1,85 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-  <meta charset="UTF-8">
-  <title>NaveChan</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NaveChan</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navechan.css">
+
 </head>
+
 <body>
-  <h1>NaveChan</h1>
+    <img
+      src="navechan.png"
+      alt="Mascote do NaveChan"
+      class="mascote"
+  >
+    <header class="topbar"> 
+        <a href="./" class="brand">NaveChan</a>
 
-  <textarea id="input" placeholder="Escreva algo..."></textarea>
-  <button id="btnPostar">Postar</button>
+        <span class="tagline">
+            um espaço para conversar anonimamente
+        </span>
+    </header>
 
-  <div id="posts"></div>
+    <main class="board">
 
-  <script type="module" src="script.js"></script>
+        <section class="board-heading">
+            <h1>NaveChan</h1>
+            <p>Bem-vindo ao NaveChan, fórum anônimo não vinculado ao CEJLL - NAVE</p>
+        </section>
+
+        <section class="composer">
+
+            <div class="section-heading">
+                Nova postagem
+            </div>
+
+            <div class="composer-content">
+
+                <textarea
+                    id="input"
+                    placeholder="Escreva algo..."
+                ></textarea>
+
+                <div class="composer-footer">
+
+                    <span class="hint">
+                        Quero resenha
+                    </span>
+
+                    <button id="btnPostar">
+                        Postar
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="recent-posts">
+
+            <div class="section-heading">
+                Chat Geral - Postagens recentes
+            </div>
+
+            <div id="posts"></div>
+
+        </section>
+
+        <footer>
+            NaveChan - Um imageboard independente.
+        </footer>
+
+    </main>
+
+    <script type="module" src="script.js"></script>
+
 </body>
-</html> 
+</html>
