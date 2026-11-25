@@ -83,7 +83,7 @@ body {
     font-size: 12px;
 }
 
-/* formularios */
+/* formulario */
 
 .composer {
     width: 100%;
@@ -172,7 +172,7 @@ button:active {
     background: #102b49;
 }
 
-/* postagens */
+/* lista de postagens */
 
 .recent-posts {
     margin-top: 25px;
@@ -181,44 +181,169 @@ button:active {
 #posts {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: stretch;
+    gap: 12px;
     padding: 15px 0;
 }
 
-#posts > * {
-    width: fit-content;
-    min-width: min(100%, 280px);
-    max-width: min(100%, 900px);
+/* postagem principal */
 
-    padding: 12px 15px;
+#posts > .post {
+    width: 96%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 100px;
+
+    margin: 0 auto;
+    padding: 16px 20px;
 
     background: var(--post-background);
     border: 1px solid var(--border);
     border-left: 3px solid var(--blue);
 
     overflow-wrap: anywhere;
-    line-height: 1.5;
 }
 
-#posts p {
-    margin: 5px 0;
+/* data */
+
+.post-cabecalho {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
-#posts a {
+.post-data {
+    color: #718594;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+/* texto da postagem */
+
+.post-conteudo {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 1.6;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    margin-bottom: 12px;
+}
+
+/* links e citacoes */
+
+.post a {
     color: var(--link);
 }
 
-#posts a:hover {
+.post a:hover {
     color: var(--green);
 }
 
-#posts blockquote,
-#posts .greentext {
+.post blockquote,
+.post .greentext {
     color: var(--quote);
 }
 
-#posts img {
+/* botao responder */
+
+.post-acoes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.post-responder {
+    padding: 3px 0;
+
+    background: transparent;
+    border: none;
+
+    color: var(--link);
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.post-responder:hover {
+    background: transparent;
+    color: var(--green);
+    text-decoration: underline;
+}
+
+/* respostas */
+
+.post-respostas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    margin-top: 14px;
+    margin-left: 12px;
+    padding-left: 14px;
+
+    border-left: 2px solid var(--border);
+}
+
+.post-respostas[hidden] {
+    display: none;
+}
+
+/* postagens que respondem outras */
+
+.post-respostas .post {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+
+    margin: 0;
+    padding: 13px 15px;
+
+    background: #c2d5e1;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+}
+
+/* aviso de resposta */
+
+.resposta-atual:not([hidden]) {
+    display: flex;
+}
+
+.resposta-atual {
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    margin-bottom: 10px;
+    padding: 9px 12px;
+
+    background: #c2d5e1;
+    border-left: 3px solid var(--green);
+
+    color: var(--accent);
+    font-size: 12px;
+}
+
+.resposta-atual[hidden] {
+    display: none;
+}
+
+.cancelar-resposta {
+    padding: 4px 8px;
+
+    background: transparent;
+    border: 1px solid var(--border);
+
+    color: var(--accent);
+    font-size: 11px;
+}
+
+/* imagens nas postagens */
+
+.post img {
     max-width: 100%;
     height: auto;
 }
@@ -260,9 +385,22 @@ footer {
         width: 100%;
     }
 
-    #posts > * {
+    #posts > .post {
         width: 100%;
-        min-width: 0;
+        padding: 14px;
+    }
+
+    .post-respostas {
+        margin-left: 5px;
+        padding-left: 9px;
+    }
+
+    .post-respostas .post {
+        padding: 12px;
+    }
+
+    .post-data {
+        font-size: 10px;
     }
 
     .composer-footer {
