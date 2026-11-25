@@ -12,9 +12,10 @@ const btnPostar = document.getElementById("btnPostar");
 
 // sistema de respostas
 let postSelecionadoParaResponder = null;
-let ultimaRequisicao = 0;
+let postsPorId = new Map();
+let carregandoPosts = false;
 
-// aviso de resposta no formulario
+// aviso de resposta
 const avisoResposta = document.createElement("div");
 avisoResposta.className = "resposta-atual";
 avisoResposta.hidden = true;
@@ -27,16 +28,13 @@ btnCancelarResposta.textContent = "Cancelar";
 btnCancelarResposta.className = "cancelar-resposta";
 
 avisoResposta.append(textoAviso, btnCancelarResposta);
-
 input.insertAdjacentElement("beforebegin", avisoResposta);
 
 // seleciona uma postagem para responder
 function selecionarPostParaResponder(post) {
-
     postSelecionadoParaResponder = post.id;
 
     textoAviso.textContent = `Respondendo à postagem No. ${post.id}`;
-
     avisoResposta.hidden = false;
 
     input.focus();
@@ -44,26 +42,21 @@ function selecionarPostParaResponder(post) {
 
 // cancela a resposta
 function cancelarResposta() {
-
     postSelecionadoParaResponder = null;
-
     avisoResposta.hidden = true;
-
     input.focus();
 }
 
 btnCancelarResposta.addEventListener("click", cancelarResposta);
 
 // cria o elemento visual de uma postagem
-
 function criarPost(post) {
-
     const el = document.createElement("article");
 
     el.className = "post";
     el.dataset.postId = String(post.id);
 
-    // data da postagem
+    // data
     const cabecalho = document.createElement("div");
     cabecalho.className = "post-cabecalho";
 
@@ -81,7 +74,7 @@ function criarPost(post) {
     conteudo.className = "post-conteudo";
     conteudo.textContent = post.conteudo;
 
-    // botao responder
+    // acoes
     const acoes = document.createElement("div");
     acoes.className = "post-acoes";
 
@@ -116,11 +109,43 @@ function criarPost(post) {
     };
 }
 
+// adiciona uma postagem na tela sem recarregar tudo
+function adicionarPostNaTela(post) {
+    const id = String(post.id);
 
-// carrega e organiza todas as postagens
+    // evita duplicar quando o realtime e o envio detectam a mesma postagem
+    if (postsPorId.has(id)) return;
+
+    const registro = criarPost(post);
+
+    postsPorId.set(id, registro);
+
+    const idPai = post.id_referenciado;
+
+    // verifica se e uma resposta
+    if (idPai !== null && idPai !== undefined) {
+        const pai = postsPorId.get(String(idPai));
+
+        if (pai) {
+            pai.respostas.hidden = false;
+            pai.respostas.appendChild(registro.elemento);
+            return;
+        }
+
+        // se o post original ainda nao estiver carregado, atualiza tudo
+        carregarPosts();
+        return;
+    }
+
+    // postagem principal aparece no inicio
+    divPosts.prepend(registro.elemento);
+}
+
+// carrega todas as postagens
 async function carregarPosts() {
+    if (carregandoPosts) return;
 
-    const requisicao = ++ultimaRequisicao;
+    carregandoPosts = true;
 
     const { data, error } = await supabase
         .from("posts")
@@ -129,105 +154,82 @@ async function carregarPosts() {
 
     if (error) {
         console.error("Erro ao carregar postagens:", error);
+        carregandoPosts = false;
         return;
-    } 
+    }
 
-    // evita que uma requisicao antiga sobrescreva uma nova
-    if (requisicao !== ultimaRequisicao) return;
+    divPosts.innerHTML = "";
+    postsPorId.clear();
 
-    const registros = data.map((post) => {
-        return criarPost(post);
+    // cria todos os elementos primeiro
+    data.forEach((post) => {
+        const registro = criarPost(post);
+        postsPorId.set(String(post.id), registro);
     });
 
-    // relaciona cada postagem ao seu id
-    const postsPorId = new Map();
-
-    registros.forEach((registro) => {
-        postsPorId.set(
-            String(registro.post.id),
-            registro
-        );
-    });
-
-    // organiza postagens principais e respostas
-    registros.forEach((registro) => {
-
-        const post = registro.post;
+    // organiza as postagens e respostas
+    data.forEach((post) => {
+        const registro = postsPorId.get(String(post.id));
         const idPai = post.id_referenciado;
 
         if (idPai !== null && idPai !== undefined) {
-
             const pai = postsPorId.get(String(idPai));
 
-            // evita referencias invalidas e postagens apontando para si mesmas
             if (
                 pai &&
                 pai !== registro &&
                 new Date(pai.post.created_at) <= new Date(post.created_at)
             ) {
-
                 pai.respostas.hidden = false;
                 pai.respostas.appendChild(registro.elemento);
-
                 return;
             }
         }
 
-        // postagem principal
         divPosts.appendChild(registro.elemento);
-
     });
 
+    carregandoPosts = false;
 }
 
 // envia uma postagem ou resposta
-
-
 async function enviarPost() {
-
     const texto = input.value.trim();
 
-    if (!texto) return;
+    if (!texto || btnPostar.disabled) return;
 
     btnPostar.disabled = true;
 
     const { data, error } = await supabase
         .from("posts")
-        .insert([
-            {
-                conteudo: texto,
-                id_referenciado: postSelecionadoParaResponder
-            }
-        ])
+        .insert({
+            conteudo: texto,
+            id_referenciado: postSelecionadoParaResponder
+        })
         .select()
         .single();
 
     if (error) {
-
         console.error("Erro ao enviar postagem:", error);
 
         alert("Não foi possível enviar sua postagem.");
 
         btnPostar.disabled = false;
-
         return;
     }
 
+    // limpa o formulario
     input.value = "";
-
     cancelarResposta();
 
-    // atualiza imediatamente a conversa
-    await carregarPosts();
+    // mostra a postagem imediatamente
+    adicionarPostNaTela(data);
 
     btnPostar.disabled = false;
-
 }
 
-
-
-// Realtime: detecta novas postagens e respostas
-supabase
+// realtime: recebe postagens de outras pessoas
+const canal = supabase
     .channel("posts-em-tempo-real")
     .on(
         "postgres_changes",
@@ -236,22 +238,22 @@ supabase
             schema: "public",
             table: "posts"
         },
-        () => {
-            carregarPosts();
+        (payload) => {
+            console.log("Nova postagem recebida:", payload.new);
+
+            adicionarPostNaTela(payload.new);
         }
     )
     .subscribe((status) => {
-
         console.log("Status do Realtime:", status);
 
         if (status === "SUBSCRIBED") {
             console.log("Conectado ao Realtime!");
-        }
 
+            // carrega as postagens depois de conectar
+            carregarPosts();
+        }
     });
 
 // inicializacao
 btnPostar.addEventListener("click", enviarPost);
-
-carregarPosts();
-
